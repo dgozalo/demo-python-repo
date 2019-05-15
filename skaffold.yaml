@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/dgozalo/demo-python-repo:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/dgozalo/demo-python-repo:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: demo-python-repo
+        chartPath: charts/demo-python-repo
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/dgozalo/demo-python-repo'
+          image.tag: '{{.DIGEST_HEX}}'
